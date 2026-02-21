@@ -10,9 +10,9 @@ use Prism\Prism\Enums\ToolChoice;
 class ToolChoiceMap
 {
     /**
-     * @return array<string, mixed>|string|null
+     * @return array<string, mixed>|null
      */
-    public static function map(string|ToolChoice|null $toolChoice): string|array|null
+    public static function map(string|ToolChoice|null $toolChoice): ?array
     {
         if (is_null($toolChoice)) {
             return null;
@@ -30,8 +30,8 @@ class ToolChoiceMap
         }
 
         return match ($toolChoice) {
-            ToolChoice::Auto => 'auto',
-            ToolChoice::Any => 'any',
+            ToolChoice::Auto => ['type' => 'auto'],
+            ToolChoice::Any => ['type' => 'any'],
         };
 
     }

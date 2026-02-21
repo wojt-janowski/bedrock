@@ -18,18 +18,14 @@ it('maps a specific tool correctly', function (): void {
 
 it('maps any tool correctly', function (): void {
     expect(ToolChoiceMap::map(ToolChoice::Any))
-        ->toBe([
-            'tool' => [
-                'any' => [],
-            ],
+        ->toEqual([
+            'any' => new \stdClass,
         ]);
 });
 
 it('maps auto tool correctly', function (): void {
     expect(ToolChoiceMap::map(ToolChoice::Auto))
-        ->toBe([
-            'tool' => [
-                'auto' => [],
-            ],
+        ->toEqual([
+            'auto' => new \stdClass,
         ]);
 });

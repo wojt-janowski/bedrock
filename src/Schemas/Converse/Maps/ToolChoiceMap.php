@@ -31,9 +31,7 @@ class ToolChoiceMap
         }
 
         return [
-            'tool' => [
-                ($toolChoice === ToolChoice::Auto ? 'auto' : 'any') => [],
-            ],
+            ($toolChoice === ToolChoice::Auto ? 'auto' : 'any') => new \stdClass,
         ];
     }
 }
