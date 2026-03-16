@@ -280,7 +280,9 @@ class ConverseStreamHandler extends BedrockStreamHandler
         if ($usage !== []) {
             $this->state->addUsage(new Usage(
                 promptTokens: $usage['inputTokens'] ?? 0,
-                completionTokens: $usage['outputTokens'] ?? 0
+                completionTokens: $usage['outputTokens'] ?? 0,
+                cacheWriteInputTokens: $usage['cacheWriteInputTokenCount'] ?? null,
+                cacheReadInputTokens: $usage['cacheReadInputTokenCount'] ?? null,
             ));
         }
 

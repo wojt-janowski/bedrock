@@ -240,6 +240,21 @@ it('handles a specific tool choice', function (): void {
     expect($response->text)->toContain('75°F and sunny');
 });
 
+it('can calculate cache usage correctly', function (): void {
+    FixtureResponse::fakeResponseSequence('converse', 'converse/generate-text-with-cache-usage');
+
+    $response = Prism::text()
+        ->using('bedrock', 'amazon.nova-micro-v1:0')
+        ->withProviderOptions(['enableCaching' => true])
+        ->withPrompt('Who are you?')
+        ->asText();
+
+    expect($response->usage->promptTokens)->toBe(63);
+    expect($response->usage->completionTokens)->toBe(44);
+    expect($response->usage->cacheWriteInputTokens)->toBe(13);
+    expect($response->usage->cacheReadInputTokens)->toBe(50);
+});
+
 it('does not enable prompt caching if the enableCaching provider meta is not set on the request', function (): void {
     FixtureResponse::fakeResponseSequence('converse', 'converse/generate-text-with-a-prompt');
 
