@@ -119,7 +119,9 @@ class ConverseStructuredHandler extends BedrockStructuredHandler
             toolCalls: $this->extractToolCalls($data),
             usage: new Usage(
                 promptTokens: data_get($data, 'usage.inputTokens'),
-                completionTokens: data_get($data, 'usage.outputTokens')
+                completionTokens: data_get($data, 'usage.outputTokens'),
+                cacheWriteInputTokens: data_get($data, 'usage.cacheWriteInputTokenCount'),
+                cacheReadInputTokens: data_get($data, 'usage.cacheReadInputTokenCount'),
             ),
             meta: new Meta(id: '', model: '') // Not provided in Converse response.
         );
