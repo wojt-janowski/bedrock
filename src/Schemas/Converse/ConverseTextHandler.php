@@ -116,7 +116,9 @@ class ConverseTextHandler extends BedrockTextHandler
             toolResults: [],
             usage: new Usage(
                 promptTokens: data_get($data, 'usage.inputTokens'),
-                completionTokens: data_get($data, 'usage.outputTokens')
+                completionTokens: data_get($data, 'usage.outputTokens'),
+                cacheWriteInputTokens: data_get($data, 'usage.cacheWriteInputTokenCount'),
+                cacheReadInputTokens: data_get($data, 'usage.cacheReadInputTokenCount'),
             ),
             meta: new Meta(id: '', model: ''),
             messages: new Collection, // Not provided in Converse response.
