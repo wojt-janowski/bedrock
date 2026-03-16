@@ -4,11 +4,14 @@ namespace Prism\Bedrock\Enums;
 
 use Illuminate\Support\Str;
 use Prism\Bedrock\Contracts\BedrockEmbeddingsHandler;
+use Prism\Bedrock\Contracts\BedrockStreamHandler;
 use Prism\Bedrock\Contracts\BedrockStructuredHandler;
 use Prism\Bedrock\Contracts\BedrockTextHandler;
+use Prism\Bedrock\Schemas\Anthropic\AnthropicStreamHandler;
 use Prism\Bedrock\Schemas\Anthropic\AnthropicStructuredHandler;
 use Prism\Bedrock\Schemas\Anthropic\AnthropicTextHandler;
 use Prism\Bedrock\Schemas\Cohere\CohereEmbeddingsHandler;
+use Prism\Bedrock\Schemas\Converse\ConverseStreamHandler;
 use Prism\Bedrock\Schemas\Converse\ConverseStructuredHandler;
 use Prism\Bedrock\Schemas\Converse\ConverseTextHandler;
 
@@ -38,6 +41,18 @@ enum BedrockSchema: string
         return match ($this) {
             self::Anthropic => AnthropicStructuredHandler::class,
             self::Converse => ConverseStructuredHandler::class,
+            default => null
+        };
+    }
+
+    /**
+     * @return null|class-string<BedrockStreamHandler>
+     */
+    public function streamHandler(): ?string
+    {
+        return match ($this) {
+            self::Anthropic => AnthropicStreamHandler::class,
+            self::Converse => ConverseStreamHandler::class,
             default => null
         };
     }
