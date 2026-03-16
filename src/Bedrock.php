@@ -13,6 +13,8 @@ use Prism\Prism\Contracts\PrismRequest;
 use Prism\Prism\Embeddings\Request as EmbeddingRequest;
 use Prism\Prism\Embeddings\Response as EmbeddingsResponse;
 use Prism\Prism\Exceptions\PrismException;
+use Prism\Prism\Images\Request as ImagesRequest;
+use Prism\Prism\Images\Response as ImagesResponse;
 use Prism\Prism\Providers\Provider;
 use Prism\Prism\Streaming\Events\StreamEvent;
 use Prism\Prism\Structured\Request as StructuredRequest;
@@ -120,6 +122,28 @@ class Bedrock extends Provider
         return $handler->handle($request);
     }
 
+    #[\Override]
+    public function images(ImagesRequest $request): ImagesResponse
+    {
+        $schema = $this->schema($request);
+
+        $handler = $schema->imagesHandler();
+
+        if ($handler === null) {
+            throw new PrismException("Prism Bedrock does not support images for the {$schema->value} apiSchema.");
+        }
+
+        $client = $this->client(
+            $request,
+            $request->clientOptions(),
+            $request->clientRetry()
+        );
+
+        $handler = new $handler($this, $client);
+
+        return $handler->handle($request);
+    }
+
     public function schema(PrismRequest $request): BedrockSchema
     {
         $override = $request->providerOptions();
@@ -138,11 +162,11 @@ class Bedrock extends Provider
      * @param  array<string, mixed>  $options
      * @param  array<mixed>  $retry
      */
-    protected function client(TextRequest|StructuredRequest|EmbeddingRequest $request, array $options = [], array $retry = []): PendingRequest
+    protected function client(TextRequest|StructuredRequest|EmbeddingRequest|ImagesRequest $request, array $options = [], array $retry = []): PendingRequest
     {
         $model = $request->model();
 
-        $enableCaching = $request instanceof EmbeddingRequest
+        $enableCaching = $request instanceof EmbeddingRequest || $request instanceof ImagesRequest
             ? false
             : $request->providerOptions('enableCaching') ?? false;
 
