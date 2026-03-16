@@ -4,6 +4,7 @@ namespace Prism\Bedrock\Enums;
 
 use Illuminate\Support\Str;
 use Prism\Bedrock\Contracts\BedrockEmbeddingsHandler;
+use Prism\Bedrock\Contracts\BedrockImagesHandler;
 use Prism\Bedrock\Contracts\BedrockStreamHandler;
 use Prism\Bedrock\Contracts\BedrockStructuredHandler;
 use Prism\Bedrock\Contracts\BedrockTextHandler;
@@ -14,12 +15,16 @@ use Prism\Bedrock\Schemas\Cohere\CohereEmbeddingsHandler;
 use Prism\Bedrock\Schemas\Converse\ConverseStreamHandler;
 use Prism\Bedrock\Schemas\Converse\ConverseStructuredHandler;
 use Prism\Bedrock\Schemas\Converse\ConverseTextHandler;
+use Prism\Bedrock\Schemas\Stability\StabilityImagesHandler;
+use Prism\Bedrock\Schemas\Titan\TitanImagesHandler;
 
 enum BedrockSchema: string
 {
     case Converse = 'converse';
     case Anthropic = 'anthropic';
     case Cohere = 'cohere';
+    case Stability = 'stability';
+    case Titan = 'titan';
 
     /**
      * @return null|class-string<BedrockTextHandler>
@@ -68,6 +73,18 @@ enum BedrockSchema: string
         };
     }
 
+    /**
+     * @return null|class-string<BedrockImagesHandler>
+     */
+    public function imagesHandler(): ?string
+    {
+        return match ($this) {
+            self::Stability => StabilityImagesHandler::class,
+            self::Titan => TitanImagesHandler::class,
+            default => null,
+        };
+    }
+
     public function defaultApiVersion(): ?string
     {
         return match ($this) {
@@ -84,6 +101,14 @@ enum BedrockSchema: string
 
         if (Str::contains($string, 'cohere.')) {
             return self::Cohere;
+        }
+
+        if (Str::contains($string, 'stability.')) {
+            return self::Stability;
+        }
+
+        if (Str::contains($string, 'amazon.titan-image')) {
+            return self::Titan;
         }
 
         return self::Converse;
