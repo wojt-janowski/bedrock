@@ -45,7 +45,9 @@ it('can generate text with reasoning content', function (): void {
         ->toBe(21)
         ->and($response->usage->completionTokens)->toBe(765)
         ->and($response->text)->toContain('In the mist‑shrouded kingdom of Eldoria')
-        ->and($response->text)->toContain('Sir Alden\'s legend endured');
+        ->and($response->text)->toContain('Sir Alden\'s legend endured')
+        ->and($response->additionalContent)->toHaveKey('thinking')
+        ->and($response->additionalContent['thinking'])->toContain('We need to respond');
 });
 
 it('can generate text with a system prompt', function (): void {

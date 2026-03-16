@@ -21,6 +21,9 @@ use Prism\Prism\Streaming\Events\StreamStartEvent;
 use Prism\Prism\Streaming\Events\TextCompleteEvent;
 use Prism\Prism\Streaming\Events\TextDeltaEvent;
 use Prism\Prism\Streaming\Events\TextStartEvent;
+use Prism\Prism\Streaming\Events\ThinkingCompleteEvent;
+use Prism\Prism\Streaming\Events\ThinkingEvent;
+use Prism\Prism\Streaming\Events\ThinkingStartEvent;
 use Prism\Prism\Streaming\Events\ToolCallDeltaEvent;
 use Prism\Prism\Streaming\Events\ToolCallEvent;
 use Prism\Prism\Streaming\StreamState;
@@ -138,6 +141,17 @@ class ConverseStreamHandler extends BedrockStreamHandler
             return null;
         }
 
+        if (isset($start['reasoningContent'])) {
+            $this->state->withBlockContext($index, 'reasoningContent');
+            $this->state->withReasoningId(EventID::generate());
+
+            return new ThinkingStartEvent(
+                id: EventID::generate(),
+                timestamp: time(),
+                reasoningId: $this->state->reasoningId(),
+            );
+        }
+
         $this->state->withBlockContext($index, 'text');
 
         return new TextStartEvent(
@@ -153,6 +167,10 @@ class ConverseStreamHandler extends BedrockStreamHandler
 
         if (isset($delta['toolUse'])) {
             return $this->handleToolUseDelta($delta['toolUse']);
+        }
+
+        if (isset($delta['reasoningContent'])) {
+            return $this->handleReasoningDelta($delta['reasoningContent']);
         }
 
         if (isset($delta['text'])) {
@@ -173,6 +191,24 @@ class ConverseStreamHandler extends BedrockStreamHandler
         }
 
         return null;
+    }
+
+    protected function handleReasoningDelta(array $reasoningContent): ?ThinkingEvent
+    {
+        $text = $reasoningContent['text'] ?? '';
+
+        if ($text === '') {
+            return null;
+        }
+
+        $this->state->appendThinking($text);
+
+        return new ThinkingEvent(
+            id: EventID::generate(),
+            timestamp: time(),
+            delta: $text,
+            reasoningId: $this->state->reasoningId(),
+        );
     }
 
     protected function handleToolUseDelta(array $toolUseDelta): ?ToolCallDeltaEvent
@@ -207,6 +243,11 @@ class ConverseStreamHandler extends BedrockStreamHandler
     {
         $result = match ($this->state->currentBlockType()) {
             'text' => $this->handleTextComplete(),
+            'reasoningContent' => new ThinkingCompleteEvent(
+                id: EventID::generate(),
+                timestamp: time(),
+                reasoningId: $this->state->reasoningId(),
+            ),
             'toolUse' => $this->handleToolUseComplete(),
             default => null,
         };
@@ -358,7 +399,12 @@ class ConverseStreamHandler extends BedrockStreamHandler
             id: EventID::generate(),
             timestamp: time(),
             finishReason: $this->state->finishReason() ?? FinishReason::Stop,
-            usage: $this->state->usage()
+            usage: $this->state->usage(),
+            additionalContent: array_filter([
+                'thinking' => $this->state->thinkingSummaries() !== []
+                    ? implode('', $this->state->thinkingSummaries())
+                    : null,
+            ]),
         );
     }
 

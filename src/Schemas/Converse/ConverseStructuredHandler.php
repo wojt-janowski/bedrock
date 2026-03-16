@@ -5,6 +5,8 @@ namespace Prism\Bedrock\Schemas\Converse;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Prism\Bedrock\Contracts\BedrockStructuredHandler;
+use Prism\Bedrock\Schemas\Converse\Concerns\ExtractsText;
+use Prism\Bedrock\Schemas\Converse\Concerns\ExtractsThinking;
 use Prism\Bedrock\Schemas\Converse\Concerns\ExtractsToolCalls;
 use Prism\Bedrock\Schemas\Converse\Maps\FinishReasonMap;
 use Prism\Bedrock\Schemas\Converse\Maps\MessageMap;
@@ -27,7 +29,7 @@ use Throwable;
 
 class ConverseStructuredHandler extends BedrockStructuredHandler
 {
-    use CallsTools, ExtractsToolCalls;
+    use CallsTools, ExtractsText, ExtractsThinking, ExtractsToolCalls;
 
     protected StructuredResponse $tempResponse;
 
@@ -113,15 +115,16 @@ class ConverseStructuredHandler extends BedrockStructuredHandler
 
         $this->tempResponse = new StructuredResponse(
             steps: new Collection,
-            text: data_get($data, 'output.message.content.0.text', ''),
+            text: $this->extractText($data),
             structured: [],
             finishReason: FinishReasonMap::map(data_get($data, 'stopReason')),
             toolCalls: $this->extractToolCalls($data),
             usage: new Usage(
                 promptTokens: data_get($data, 'usage.inputTokens'),
-                completionTokens: data_get($data, 'usage.outputTokens')
+                completionTokens: data_get($data, 'usage.outputTokens'),
             ),
-            meta: new Meta(id: '', model: '') // Not provided in Converse response.
+            meta: new Meta(id: '', model: ''), // Not provided in Converse response.
+            additionalContent: $this->extractThinking($data),
         );
     }
 
