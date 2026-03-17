@@ -431,10 +431,7 @@ class AnthropicStreamHandler extends BedrockStreamHandler
                 ->withOptions(['stream' => true])
                 ->post(
                     'invoke-with-response-stream',
-                    array_merge(
-                        AnthropicTextHandler::buildPayload($request, $this->provider->apiVersion($request)),
-                        ['stream' => true]
-                    )
+                    AnthropicTextHandler::buildPayload($request, $this->provider->apiVersion($request))
                 );
 
             return $response;
